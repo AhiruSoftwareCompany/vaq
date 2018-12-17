@@ -23,7 +23,8 @@ class DataAccess {
         $index = rand(0, count($entries) - 1);
         $data = preg_split("#\n\s*\n#Uis", $entries[$index]);
         $headers = $this->http_parse_headers($data[0]); // also exists in pecl, but not a standard php function
-        $quote = new Quote($headers['id'], $headers['date'], $data[1]);
+        $body = substr($data[1], 0, -1); // Remove the last \n from the body
+        $quote = new Quote($headers['id'], $headers['date'], $body);
         return $quote;
     }
 
