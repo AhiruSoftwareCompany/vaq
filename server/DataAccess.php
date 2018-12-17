@@ -4,7 +4,7 @@
  * Singleton
  */
 class DataAccess {
-    var $path = "data/quotes";
+    var $quotesPath = "data/quotes";
 
     protected static $instance = null;
  
@@ -19,27 +19,16 @@ class DataAccess {
     protected function __clone() { }
 
     public function getRandomQuote() {
-        $lines = file($this->path, FILE_IGNORE_NEW_LINES);
-        $index = rand(0, count($lines) - 1);
-
-        $quote = array();
-        $values = explode('#', $lines[$index]);
-
-        $idPair = explode('=', $values[0]);
-        $bodyPair = explode('=', $values[1]);
-        $datePair = explode('=', $values[2]);
-        $ratingPair = explode('=', $values[3]);
-
-        $quote[$idPair[0]] = $idPair[1];
-        $quote[$bodyPair[0]] = $bodyPair[1];
-        $quote[$datePair[0]] = $datePair[1];
-        $quote[$ratingPair[0]] = $ratingPair[1];
-
+        $entries = explode("---\n", file_get_contents($this->quotesPath));
+        $index = rand(0, count($entries) - 1);
+        $data = preg_split("#\n\s*\n#Uis", $entries[$index]);
+        $headers = $this->http_parse_headers($data[0]); // also exists in pecl, but not a standard php function
+        $quote = new Quote($headers['id'], $headers['date'], $data[1]);
         return $quote;
     }
 
     public function refreshRating($quote) {
-        $lines = file($this->path, FILE_IGNORE_NEW_LINES);
+        $lines = file($this->quotesPath, FILE_IGNORE_NEW_LINES);
         $index = -1;
         
         foreach ($lines as $i => $line) {
@@ -61,6 +50,16 @@ class DataAccess {
 
         file_put_contents($this->path, implode(PHP_EOL, $lines));
         return 201;
+    }
+
+    private function http_parse_headers($headers) {
+        $retVal = array();
+        $lines = explode("\n", $headers);
+        foreach($lines as $line) {
+            $parts = explode(':', $line);
+            $retVal[$parts[0]] = trim($parts[1]);
+        }
+        return $retVal;
     }
 }
 
