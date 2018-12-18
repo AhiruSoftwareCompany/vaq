@@ -20,8 +20,8 @@ class DataAccess {
 
     public function getRandomQuote() {
         $entries = explode("---\n", file_get_contents($this->quotesPath));
-        $index = rand(0, count($entries) - 1);
-        $data = preg_split("#\n\s*\n#Uis", $entries[$index]);
+        $index = rand(0, count($entries) - 1); // Get a random index in the range of entries
+        $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separates headers from body
         $headers = $this->http_parse_headers($data[0]); // also exists in pecl, but not a standard php function
         $body = substr($data[1], 0, -1); // Remove the last \n from the body
         $quote = new Quote($headers['id'], $headers['date'], $body);
