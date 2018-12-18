@@ -16,19 +16,13 @@ $dataAccess = DataAccess::getInstance();
  * Service Dispatcher
  */
 $url = $_REQUEST['_url'];
-$requestType = $_SERVER['REQUEST_METHOD'];
+$method = $_SERVER['REQUEST_METHOD'];
 $body = file_get_contents('php://input');
 
-if ($url === '/quote') {
-    if ($requestType === 'GET')
-        getQuote();
-    elseif ($requestType === 'PUT')
-        putQuote($body);
-    else
-        badRequest($requestType, $url, $body);
-} else {
-    badRequest($requestType, $url, $body);
-}
+if (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
+    putQuote($matches[1], json_decode($body));
+else
+    badRequest($method, $url, $body);
 
 /**
  * Services
@@ -47,18 +41,25 @@ function getQuote() {
 /**
  * PUT quote <JSON-quote>: Refreshes the rating of the given quote
  */
-function putQuote($data) {
+function putQuote($id, $vote) {
+    if (!($vote == 1 || $vote == -1) || $id == -1) {
+        global $method;
+        global $url;
+        global $body;
+        badRequest($method, $url, $body);
+    }
+
     global $dataAccess;
-    $result = $dataAccess->refreshRating($data);
+    $result = $dataAccess->refreshRating($id, $vote);
     http_response_code($result);
 }
 
-function badRequest($requestType, $url, $body) {
+function badRequest($method, $url, $body) {
     http_response_code(400);
     if ($GLOBALS["debugToErrorLog"]) {
         error_log("bad request");
     }
-    die('Invalid request: '.$requestType.' '.$url.' '.$body);
+    die('Invalid request: '.$method.' '.$url.' '.$body);
 }
 
 ?>

@@ -45,6 +45,7 @@ class Quote implements JsonSerializable {
     }
 
     // source: https://stackoverflow.com/questions/4697656/using-json-encode-on-objects-in-php-regardless-of-scope
+    // deprecated
     public function jsonSerialize() {
         return [
             'id' => $this->getId(),
