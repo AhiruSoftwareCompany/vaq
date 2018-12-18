@@ -50,8 +50,7 @@ function getQuote() {
 function putQuote($data) {
     global $dataAccess;
     $result = $dataAccess->refreshRating($data);
-    //http_response_code($result);
-    echo json_encode($result);
+    http_response_code($result);
 }
 
 function badRequest($requestType, $url, $body) {

@@ -32,7 +32,7 @@ class DataAccess {
     public function refreshRating($data) {
         $quote = new Quote($json = $data);
         $id = $quote->getId();
-        if ($id === -1) return 400;
+        if ($id == -1) return 400;
         $rating = $quote->getRating();
 
         $found = false;
