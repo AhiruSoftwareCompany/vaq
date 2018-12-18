@@ -5,6 +5,7 @@
  */
 class DataAccess {
     var $quotesPath = "data/quotes";
+    var $ratingsPath = "data/ratings";
 
     protected static $instance = null;
  
@@ -24,33 +25,37 @@ class DataAccess {
         $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separates headers from body
         $headers = $this->http_parse_headers($data[0]); // also exists in pecl, but not a standard php function
         $body = substr($data[1], 0, -1); // Remove the last \n from the body
-        $quote = new Quote($headers['id'], $headers['date'], $body);
+        $quote = new Quote($json = false, $headers['id'], $headers['date'], $body);
         return $quote;
     }
 
-    public function refreshRating($quote) {
-        $lines = file($this->quotesPath, FILE_IGNORE_NEW_LINES);
-        $index = -1;
-        
+    public function refreshRating($data) {
+        $quote = new Quote($json = $data);
+        $id = $quote->getId();
+        if ($id === -1) return 400;
+        $rating = $quote->getRating();
+
+        $found = false;
+        $lines = file($this->ratingsPath, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $i => $line) {
-            $values = explode('#', $line);
-            $idPair = explode('=', $values[0]);
-            if ($idPair[1] === $quote->{'id'}) {
-                $index = $i;
-                break;
+            $values = explode(' ', $line);
+            if ($values[0] === $id) {
+                if ($found) { // Check if we already found and changed an entry
+                    $lines[$i] = "-1 " . $line; // mark line as invalid
+                } else {
+                    $found = true;
+                    $values[1] += $rating; // might change to absolute rating
+                    $lines[$i] = implode(' ', $values);
+                }
             }
         }
 
-        if ($index === -1)
-            return 404;
+        if (!$found) {
+            $lines[count($lines)] = $id . ' ' . $rating;
+        }
 
-        $ratingPair = explode('=', $values[3]);
-        $ratingPair[1] = $quote->{'rating'};
-        $values[3] = implode('=', $ratingPair);
-        $lines[$i] = implode('#', $values);
-
-        file_put_contents($this->path, implode(PHP_EOL, $lines));
-        return 201;
+        file_put_contents($this->ratingsPath, implode(PHP_EOL, $lines));
+        return 200; // may want to distinguish results more
     }
 
     private function http_parse_headers($headers) {

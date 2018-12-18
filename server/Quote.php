@@ -5,26 +5,42 @@ class Quote implements JsonSerializable {
     private $body;
     private $rating;
 
-    function __construct($id, $date, $body, $rating = 0) {
-        $this->id = $id;
-        $this->date = $date;
-        $this->body = $body;
-        $this->rating = $rating;
+    public function __construct($json = false, $id = -1, $date = "", $body = "", $rating = 0) {
+        if ($json) {
+            $this->set(json_decode($json, true));
+        } else {
+            $this->id = $id;
+            $this->date = $date;
+            $this->body = $body;
+            $this->rating = $rating;
+        }
     }
 
-    function getId() {
+    // source: https://stackoverflow.com/questions/5397758/json-decode-to-custom-class/5398361#5398361
+    public function set($data) {
+        foreach ($data AS $key => $value) {
+            if (is_array($value)) {
+                $sub = new Quote;
+                $sub->set($value);
+                $value = $sub;
+            }
+            $this->{$key} = $value;
+        }
+    }
+
+    public function getId() {
         return $this->id;
     }
 
-    function getDate() {
+    public function getDate() {
         return $this->date;
     }
 
-    function getBody() {
+    public function getBody() {
         return $this->body;
     }
 
-    function getRating() {
+    public function getRating() {
         return $this->rating;
     }
 

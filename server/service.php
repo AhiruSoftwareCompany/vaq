@@ -18,13 +18,12 @@ $dataAccess = DataAccess::getInstance();
 $url = $_REQUEST['_url'];
 $requestType = $_SERVER['REQUEST_METHOD'];
 $body = file_get_contents('php://input');
-$jsonData = json_decode($body);
 
 if ($url === '/quote') {
     if ($requestType === 'GET')
         getQuote();
     elseif ($requestType === 'PUT')
-        putQuote($jsonData);
+        putQuote($body);
     else
         badRequest($requestType, $url, $body);
 } else {
@@ -48,10 +47,11 @@ function getQuote() {
 /**
  * PUT quote <JSON-quote>: Refreshes the rating of the given quote
  */
-function putQuote($quote) {
+function putQuote($data) {
     global $dataAccess;
-    $result = $dataAccess->refreshRating($quote);
-    http_response_code($result);
+    $result = $dataAccess->refreshRating($data);
+    //http_response_code($result);
+    echo json_encode($result);
 }
 
 function badRequest($requestType, $url, $body) {
