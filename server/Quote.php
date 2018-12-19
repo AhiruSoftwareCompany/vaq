@@ -17,6 +17,7 @@ class Quote implements JsonSerializable {
     }
 
     // source: https://stackoverflow.com/questions/5397758/json-decode-to-custom-class/5398361#5398361
+    // deprecated
     public function set($data) {
         foreach ($data AS $key => $value) {
             if (is_array($value)) {
@@ -45,7 +46,6 @@ class Quote implements JsonSerializable {
     }
 
     // source: https://stackoverflow.com/questions/4697656/using-json-encode-on-objects-in-php-regardless-of-scope
-    // deprecated
     public function jsonSerialize() {
         return [
             'id' => $this->getId(),

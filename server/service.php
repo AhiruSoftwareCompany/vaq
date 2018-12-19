@@ -39,7 +39,7 @@ function getQuote() {
 }
 
 /**
- * PUT quote <JSON-quote>: Refreshes the rating of the given quote
+ * PUT quote/{id} vote: Refreshes the rating of the given quote
  */
 function putQuote($id, $vote) {
     if (!($vote == 1 || $vote == -1) || $id < 0) {
