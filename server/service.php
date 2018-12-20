@@ -21,6 +21,8 @@ $body = file_get_contents('php://input');
 
 if (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
     putQuote($matches[1], json_decode($body));
+elseif ($url === "/quote" && $method === 'GET')
+    getQuote();
 else
     badRequest($method, $url, $body);
 
@@ -34,8 +36,12 @@ else
 function getQuote() {
     global $dataAccess;
     $quote = $dataAccess->getRandomQuote();
-    echo json_encode($quote);
-    http_response_code(200);
+    if ($quote == null) {
+        http_response_code(404);
+    } else {
+        echo json_encode($quote);
+        http_response_code(200);
+    }
 }
 
 /**

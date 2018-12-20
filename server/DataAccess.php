@@ -21,6 +21,8 @@ class DataAccess {
 
     public function getRandomQuote() {
         $entries = explode("---\n", file_get_contents($this->quotesPath));
+        if (strlen(trim($entries[0])) < 5) return null; // If there isn't any quote, return with an error. (count[entries] will always be > 0)
+
         $index = rand(0, count($entries) - 1); // Get a random index in the range of entries
         $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separate headers from body
         $headers = $this->http_parse_headers($data[0]); // also exists in pecl, but not a standard php function
@@ -41,6 +43,7 @@ class DataAccess {
     }
 
     public function refreshRating($id, $vote) {
+        $retVal = 200;
         $found = false;
         $lines = file($this->ratingsPath, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $i => $line) {
@@ -58,10 +61,11 @@ class DataAccess {
 
         if (!$found) {
             $lines[count($lines)] = $id . ' ' . $vote;
+            $retVal = 201;
         }
 
         file_put_contents($this->ratingsPath, implode(PHP_EOL, $lines));
-        return 200; // may want to distinguish results more
+        return $retVal;
     }
 
     private function http_parse_headers($headers) {
