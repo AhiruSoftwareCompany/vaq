@@ -4,8 +4,9 @@ class Quote implements JsonSerializable {
     private $date;
     private $body;
     private $rating;
+    private $vote;
 
-    public function __construct($json = false, $id = -1, $date = "", $body = "", $rating = 0) {
+    public function __construct($json = false, $id = -1, $date = "", $body = "", $rating = 0, $vote = 0) {
         if ($json) {
             $this->set(json_decode($json, true));
         } else {
@@ -13,6 +14,7 @@ class Quote implements JsonSerializable {
             $this->date = $date;
             $this->body = $body;
             $this->rating = $rating;
+            $this->vote = $vote;
         }
     }
 
@@ -45,13 +47,18 @@ class Quote implements JsonSerializable {
         return $this->rating;
     }
 
+    public function getVote() {
+        return $this->vote;
+    }
+
     // source: https://stackoverflow.com/questions/4697656/using-json-encode-on-objects-in-php-regardless-of-scope
     public function jsonSerialize() {
         return [
             'id' => $this->getId(),
             'date' => $this->getDate(),
             'body' => $this->getBody(),
-            'rating' => $this->getRating()
+            'rating' => $this->getRating(),
+            'vote' => $this->getVote()
         ];
     }
 }
