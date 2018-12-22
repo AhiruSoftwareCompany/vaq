@@ -6,7 +6,11 @@ function __autoload($class_name) {
     include $class_name . '.php';
 }
 
+/**
+ * Initiates the DAO
+ */
 $dao = DAO::getInstance();
+$dao->touchFiles();
 
 /**
  * Checks if there is already a user is the session.
@@ -17,7 +21,6 @@ $uid = isset($_COOKIE["uid"]) ? $_COOKIE["uid"] : false;
 $user = isset($_SESSION["user"]) ? new User($_SESSION["user"]) : $dao->getUser($uid);
 setcookie("uid", $user->getUID(), 2147483647); // Update the uid, just in case
 $_SESSION["user"] = json_encode($user);
-
 
 /**
  * Service Dispatcher

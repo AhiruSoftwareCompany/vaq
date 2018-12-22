@@ -22,6 +22,20 @@ class DAO {
     protected function __clone() { }
 
     /**
+     * Checks if the quotes-file exists.
+     * Tries to create the auto-generated files if they do not already exist.
+     */
+    public function touchFiles() {
+        if (!file_exists($this->quotesPath)) die("Quotes-file does not exist");
+
+        $fr = fopen($this->ratingsPath, 'w') or die("Can't create ratings-file");
+        fclose($fr);
+
+        $fu = fopen($this->usersPath, 'w') or die("Can't create users-file");
+        fclose($fu);
+    }
+
+    /**
      * Gets a random quote from the quotes-file.
      * @param User $user: The querying user
      * @return Quote|null: A random quote or null if none was found
