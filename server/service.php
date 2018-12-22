@@ -1,25 +1,20 @@
 <?php
 
-/**
- * set true to write DEBUG-information to the PHP-ErrorLog
- */
-$debugToErrorLog = true;
+$debugToErrorLog = true; // set true to write DEBUG-information to the PHP-ErrorLog
 
 function __autoload($class_name) {
     include $class_name . '.php';
 }
 
-$dataAccess = DataAccess::getInstance();
-
+$dao = DAO::getInstance();
 
 /**
- * Check if there is already a user is the session
- * If not, check if there is a cookie with the uid
- * If not, create a new user
+ * Checks if there is already a user is the session.
+ * If not, checks if there is a cookie with the uid.
+ * If not, creates a new user.
  */
-$user = isset($_SESSION["user"])?
-    new User($_SESSION["user"]) :
-    $dataAccess->findUserToId(isset($_COOKIE["uid"])? $_COOKIE["uid"] : false);
+$uid = isset($_COOKIE["uid"]) ? $_COOKIE["uid"] : false;
+$user = isset($_SESSION["user"]) ? new User($_SESSION["user"]) : $dao->getUser($uid);
 setcookie("uid", $user->getUID(), 2147483647); // Update the uid, just in case
 $_SESSION["user"] = json_encode($user);
 
@@ -35,8 +30,6 @@ if (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
     putQuote($matches[1], json_decode($body));
 elseif ($url === "/quote" && $method === 'GET')
     getQuote();
-elseif ($url === "/test")
-    test($body);
 else
     badRequest($method, $url, $body);
 
@@ -45,13 +38,13 @@ else
  */
 
 /**
- * GET quote: Gets a random quote from the file
+ * GET quote: Gets a random quote from the file.
  */
 function getQuote() {
-    global $dataAccess;
+    global $dao;
     global $user;
 
-    $quote = $dataAccess->getRandomQuote($user);
+    $quote = $dao->getRandomQuote($user);
     if ($quote == null) {
         http_response_code(404);
     } else {
@@ -61,7 +54,9 @@ function getQuote() {
 }
 
 /**
- * PUT quote/{id} vote: Refreshes the rating of the given quote
+ * PUT quote/{id} vote: Refreshes the rating of the given quote.
+ * @param $id   int: The id of the quote
+ * @param $vote int: The actual vote
  */
 function putQuote($id, $vote) {
     if (!($vote == 1 || $vote == -1) || $id < 0) {
@@ -71,9 +66,9 @@ function putQuote($id, $vote) {
         badRequest($method, $url, $body);
     }
 
-    global $dataAccess;
+    global $dao;
     global $user;
-    $result = $dataAccess->refreshRating(new Vote(false, $id, $vote), $user);
+    $result = $dao->refreshRating(new Vote(false, $id, $vote), $user);
     http_response_code($result);
 }
 
@@ -82,12 +77,5 @@ function badRequest($method, $url, $body) {
     if ($GLOBALS["debugToErrorLog"]) {
         error_log("bad request");
     }
-    die('Invalid request: '.$method.' '.$url.' '.$body);
+    die('Invalid request: ' . $method . ' ' . $url . ' ' . $body);
 }
-
-function test($body) {
-    global $dataAccess;
-    echo $dataAccess->test($body);
-}
-
-?>

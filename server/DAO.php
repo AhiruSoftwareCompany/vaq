@@ -3,30 +3,36 @@
 /**
  * Singleton
  */
-class DataAccess {
+class DAO {
     private $quotesPath = "data/quotes";
     private $ratingsPath = "data/ratings";
     private $usersPath = "data/users";
 
     protected static $instance = null;
- 
-	public static function getInstance() {
-		if (null === self::$instance) {
-			self::$instance = new self;
-		}
-		return self::$instance;
+
+    public static function getInstance() {
+        if (null === self::$instance) {
+            self::$instance = new self;
+        }
+        return self::$instance;
     }
 
     protected function __construct() { }
+
     protected function __clone() { }
 
-    public function getRandomQuote($user) {
+    /**
+     * Gets a random quote from the quotes-file.
+     * @param User $user: The querying user
+     * @return Quote|null: A random quote or null if none was found
+     */
+    public function getRandomQuote(User $user) {
         $entries = explode("---\n", file_get_contents($this->quotesPath));
         if (strlen(trim($entries[0])) < 5) return null; // If there isn't any quote, return with an error. (count[entries] will always be > 0)
 
         $index = rand(0, count($entries) - 1); // Get a random index in the range of entries
         $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separate headers from body
-        $headers = $this->http_parse_headers($data[0]); // also exists in pecl, but not a standard php function
+        $headers = $this->http_parse_headers($data[0]);
         $body = substr($data[1], 0, -1); // Remove the last \n from the body
 
         // Get the current rating of the quote
@@ -34,13 +40,12 @@ class DataAccess {
         $lines = file($this->ratingsPath, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $i => $line) {
             $values = explode(' ', $line);
-            if ($values[0] === $headers["id"
-            ]) {
+            if ($values[0] === $headers["id"]) {
                 $rating = $values[1];
                 break;
             }
         }
-        
+
         // Get the users vote for the quote
         $vote = 0;
         if ($user->getVotes() !== null) {
@@ -52,11 +57,17 @@ class DataAccess {
             }
         }
 
-        $quote = new Quote($json = false, $headers["id"], $headers["date"], $body, $rating, $vote?$vote:0);
+        $quote = new Quote($headers["id"], $headers["date"], $body, $rating, $vote ? $vote : 0);
         return $quote;
     }
 
-    public function refreshRating($vote, $user) {
+    /**
+     * Refreshes the user- and the ratings-file accordingly to the input.
+     * @param Vote $vote: The new vote
+     * @param User $user: The voting user
+     * @return int: The http_response_code: 201 if nobody voted on that quote yet, 200 otherwise
+     */
+    public function refreshRating(Vote $vote, User $user) {
         $retVal = 200;
         $diff = 0;
 
@@ -93,24 +104,34 @@ class DataAccess {
         }
         file_put_contents($this->ratingsPath, implode(PHP_EOL, $lines));
 
-        
 
         return $retVal;
     }
 
+    /**
+     * This function also exists in pecl, but isn't a standard php function.
+     * @param $headers: HTTP-headers in the form {key]: {value}
+     * @return array of {key} => {value} pairs
+     */
     private function http_parse_headers($headers) {
         $retVal = array();
         $lines = explode("\n", $headers);
-        foreach($lines as $line) {
+        foreach ($lines as $line) {
             $parts = explode(':', $line);
             $retVal[$parts[0]] = trim($parts[1]);
         }
         return $retVal;
     }
 
-    public function findUserToId($uid = false) {
-        $user;
-        
+    /**
+     * Tries to find user to the given uid in users-file.
+     * Creates new user with unique uid if none can be found or uid == false.
+     * @param bool $uid
+     * @return User|null
+     */
+    public function getUser($uid = false) {
+        $user = null;
+
         if ($uid) { // User should exist, find it
             $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
             $found = false;
@@ -125,7 +146,7 @@ class DataAccess {
             }
 
             if (!$found)
-                return $this->findUserToId(); // Did not find user in file, create new one
+                return $this->getUser(); // Did not find user in file, create new one
 
         } else { // User does not exist yet, create new one
             $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
@@ -137,20 +158,18 @@ class DataAccess {
             }
 
             do {
-                $uid = random_int(1, PHP_INT_MAX);
-            } while(array_search($uid, $ids)); // Make sure the id is not already used
+                try {
+                    $uid = random_int(1, PHP_INT_MAX);
+                } catch (Exception $e) {
+                    $uid = rand(1, PHP_INT_MAX);
+                }
+            } while (array_search($uid, $ids)); // Make sure the id is not already used
 
             $user = new User(false, $uid);
             $lines[count($lines)] = json_encode($user);
             file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
         }
-        
+
         return $user;
     }
-
-    public function test($jsonBody) {
-        
-    }
 }
-
-?>

@@ -1,4 +1,5 @@
 <?php
+
 class User implements JsonSerializable {
     private $uid;
     private $votes; // array
@@ -29,11 +30,19 @@ class User implements JsonSerializable {
         return $this->uid;
     }
 
+    /**
+     * @return Vote[]
+     */
     public function getVotes() {
         return $this->votes;
     }
 
-    public function vote($vote) {
+    /**
+     * If the user already voted chances the vote, if not adds it
+     * @param Vote $vote : The new Vote
+     * @return int: The difference between old and new vote
+     */
+    public function vote(Vote $vote) {
         if ($this->votes === null) {
             $this->votes = array();
         }
@@ -62,4 +71,3 @@ class User implements JsonSerializable {
         ];
     }
 }
-?>

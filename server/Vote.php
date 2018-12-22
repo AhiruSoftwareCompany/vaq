@@ -1,7 +1,8 @@
 <?php
+
 class Vote implements JsonSerializable {
     private $id;
-    private $vote;
+    private $vote; // int
 
     public function __construct($json = false, $id = -1, $vote = 0) {
         if ($json) {
@@ -13,7 +14,7 @@ class Vote implements JsonSerializable {
     }
 
     private function set($data) {
-        foreach ($data AS $key => $value) {
+        foreach ($data as $key => $value) {
             $this->{$key} = $value;
         }
     }
@@ -33,4 +34,3 @@ class Vote implements JsonSerializable {
         ];
     }
 }
-?>
