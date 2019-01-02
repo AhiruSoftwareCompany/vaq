@@ -3,7 +3,7 @@
       <pre *ngIf="currentQuote != null" >{{ currentQuote.body }}</pre>
   </div>
   <div>
-      <button>-1</button>
-      <button>+1</button>
+      <button (click)="refreshRating(-1)">-1</button>
+      <button (click)="refreshRating(1)">+1</button>
   </div>
 </div>

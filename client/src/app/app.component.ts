@@ -20,4 +20,9 @@ export class AppComponent implements OnInit {
             this.currentQuote = quote;
         });
     }
+
+    public refreshRating(vote: number): void {
+        this.currentQuote.vote = vote;
+        this.quoteService.refreshRating(this.currentQuote);
+    }
 }
