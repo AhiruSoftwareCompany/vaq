@@ -1,6 +1,6 @@
 <div class=center>
   <div class="quote">
-      <pre>{{ currentQuote.body }}</pre>
+      <pre *ngIf="currentQuote != null" >{{ currentQuote.body }}</pre>
   </div>
   <div>
       <button>-1</button>

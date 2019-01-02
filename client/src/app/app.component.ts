@@ -8,13 +8,16 @@ import { Quote } from './Quote';
     styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-    public currentQuote: Quote;
+    public currentQuote: Quote = null;
 
     public constructor(
         private quoteService: QuoteService) {
     }
 
     public ngOnInit(): void {
-        this.currentQuote = this.quoteService.getRandomQuote();
+        this.quoteService.getRandomQuote()
+        .then(quote => {
+            this.currentQuote = quote;
+        });
     }
 }
