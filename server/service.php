@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 $debugToErrorLog = true; // set true to write DEBUG-information to the PHP-ErrorLog
 
 function __autoload($class_name) {
@@ -10,7 +12,7 @@ function __autoload($class_name) {
  * Initiates the DAO
  */
 $dao = DAO::getInstance();
-$dao->touchFiles();
+//$dao->touchFiles();
 
 /**
  * Checks if there is already a user is the session.
@@ -19,8 +21,8 @@ $dao->touchFiles();
  */
 $uid = isset($_COOKIE["uid"]) ? $_COOKIE["uid"] : false;
 $user = isset($_SESSION["user"]) ? new User($_SESSION["user"]) : $dao->getUser($uid);
-setcookie("uid", $user->getUID(), 2147483647); // Update the uid, just in case
-$_SESSION["user"] = json_encode($user);
+setcookie("uid", $user->getUID(), 2147483647); // Set / Update the uid in the cookie
+$_SESSION["user"] = json_encode($user); // Set (/ Update) the session-entry
 
 /**
  * Service Dispatcher
