@@ -28,10 +28,14 @@ class DAO {
     public function touchFiles() {
         if (!file_exists($this->quotesPath)) die("Quotes-file does not exist");
 
-        $fr = fopen($this->ratingsPath, 'w') or die("Can't create ratings-file");
+        $fr = fopen($this->ratingsPath, 'r')        // Check if file is readable
+            or $fr = fopen($this->ratingsPath, 'w') // If not, try to create new one
+            or die("Can't create ratings-file");          // If can't, die
         fclose($fr);
 
-        $fu = fopen($this->usersPath, 'w') or die("Can't create users-file");
+        $fu = fopen($this->usersPath, 'r')          // See above
+            or $fu = fopen($this->usersPath, 'w')
+            or die("Can't create users-file");
         fclose($fu);
     }
 

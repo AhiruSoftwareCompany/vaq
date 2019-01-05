@@ -12,7 +12,7 @@ function __autoload($class_name) {
  * Initiates the DAO
  */
 $dao = DAO::getInstance();
-//$dao->touchFiles();
+$dao->touchFiles();
 
 /**
  * Checks if there is already a user is the session.
