@@ -20,7 +20,7 @@ $dao->touchFiles();
  * If not, creates a new user.
  */
 $uid = isset($_COOKIE["uid"]) ? $_COOKIE["uid"] : false;
-$user = isset($_SESSION["user"]) ? new User($_SESSION["user"]) : $dao->getUser($uid);
+$user = isset($_SESSION["user"]) ? $dao->putUser(new User($_SESSION["user"])) : $dao->getUser($uid);
 setcookie("uid", $user->getUID(), 2147483647); // Set / Update the uid in the cookie
 $_SESSION["user"] = json_encode($user); // Set (/ Update) the session-entry
 

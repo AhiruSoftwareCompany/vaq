@@ -28,14 +28,10 @@ class DAO {
     public function touchFiles() {
         if (!file_exists($this->quotesPath)) die("Quotes-file does not exist");
 
-        $fr = fopen($this->ratingsPath, 'r')        // Check if file is readable
-            or $fr = fopen($this->ratingsPath, 'w') // If not, try to create new one
-            or die("Can't create ratings-file");          // If can't, die
+        $fr = fopen($this->ratingsPath, 'a+') or die("Can't create ratings-file");
         fclose($fr);
 
-        $fu = fopen($this->usersPath, 'r')          // See above
-            or $fu = fopen($this->usersPath, 'w')
-            or die("Can't create users-file");
+        $fu = fopen($this->usersPath, 'a+') or die("Can't create users-file");
         fclose($fu);
     }
 
@@ -143,51 +139,72 @@ class DAO {
 
     /**
      * Tries to find user to the given uid in users-file.
-     * Creates new user with unique uid if none can be found or uid == false.
-     * @param bool $uid
-     * @return User|null
+     * @param int $uid
+     * @return User|bool    User if one was found in the file, false else.
      */
-    public function getUser($uid = false) {
+    public function existsUser($uid) {
         $user = null;
+        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
 
-        if ($uid) { // User should exist, find it
-            $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
-            $found = false;
-
-            foreach ($lines as $line) {
-                $u = new User($line);
-                if ($u->getUID() == $uid) {
-                    $user = $u;
-                    $found = true;
-                    break;
-                }
+        foreach ($lines as $line) {
+            $u = new User($line);
+            if ($u->getUID() == $uid) {
+                $user = $u;
+                break;
             }
-
-            if (!$found)
-                return $this->getUser(); // Did not find user in file, create new one
-
-        } else { // User does not exist yet, create new one
-            $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
-            $ids = array();
-
-            foreach ($lines as $line) {
-                $u = new User($line);
-                array_push($ids, $u->getUID());
-            }
-
-            do {
-                try {
-                    $uid = random_int(1, PHP_INT_MAX);
-                } catch (Exception $e) {
-                    $uid = rand(1, PHP_INT_MAX);
-                }
-            } while (array_search($uid, $ids)); // Make sure the id is not already used
-
-            $user = new User(false, $uid);
-            $lines[count($lines)] = json_encode($user);
-            file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
         }
 
+        return ($user === null)? false : $user;
+    }
+
+    /**
+     * If the server knows a user to the given user, returns it.
+     * Else, or when uid == false, creates new user with unique uid.
+     * @param bool|int $uid
+     * @return User
+     */
+    public function getUser($uid = false) {
+        if ($uid && ($userInFile = $this->existsUser($uid)) !== null)
+            return $userInFile;
+
+        // User does not exist yet => create new one
+        $user = null;
+        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
+        $ids = array();
+
+        foreach ($lines as $line) {
+            $u = new User($line);
+            array_push($ids, $u->getUID());
+        }
+
+        do {
+            try {
+                $uid = random_int(1, PHP_INT_MAX);
+            } catch (Exception $e) {
+                $uid = rand(1, PHP_INT_MAX);
+            }
+        } while (array_search($uid, $ids)); // Make sure the id is not already used
+
+        $user = new User(false, $uid);
+        $lines[count($lines)] = json_encode($user);
+        file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
+
+        return $user;
+    }
+
+    /**
+     * Makes sure a specific user is present in the users-file.
+     * @param User $user
+     * @return User
+     */
+    public function putUser(User $user) {
+        if ($this->existsUser($user->getUID()))
+            return $user;
+
+        // User does not exist in file => put it there
+        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
+        $lines[count($lines)] = json_encode($user);
+        file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
         return $user;
     }
 }
