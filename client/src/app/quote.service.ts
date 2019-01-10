@@ -21,9 +21,12 @@ export class QuoteService {
         .catch(this.handleError);
     }
 
-    public refreshRating(quote: Quote): Promise<any> {
+    public refreshRating(quote: Quote): Promise<number> {
         return this.httpClient.put(this.url + "quote/" + quote.id, quote.vote)
-        .toPromise();
+        .toPromise()
+        .then((response: number) => {
+            return response;
+        });
     }
 
     private handleError(error: any): Promise<any> {

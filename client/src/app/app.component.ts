@@ -27,6 +27,10 @@ export class AppComponent implements OnInit {
 
     public refreshRating(vote: number): void {
         this.currentQuote.vote = vote;
-        this.quoteService.refreshRating(this.currentQuote);
+        let ratingAN = Number(this.currentQuote.rating);
+        this.quoteService.refreshRating(this.currentQuote)
+        .then(diff => {
+            this.currentQuote.rating = ratingAN + diff;
+        });
     }
 }

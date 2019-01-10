@@ -77,6 +77,7 @@ class DAO {
 
     /**
      * Refreshes the user- and the ratings-file accordingly to the input.
+     * Echoes the change in rating to the client.
      * @param Vote $vote: The new vote
      * @param User $user: The voting user
      * @return int: The http_response_code: 201 if nobody voted on that quote yet, 200 otherwise
@@ -118,7 +119,7 @@ class DAO {
         }
         file_put_contents($this->ratingsPath, implode(PHP_EOL, $lines));
 
-
+        echo $diff;
         return $retVal;
     }
 
