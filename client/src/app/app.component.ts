@@ -15,6 +15,10 @@ export class AppComponent implements OnInit {
     }
 
     public ngOnInit(): void {
+        this.getNewQuote();
+    }
+
+    public getNewQuote(): void {
         this.quoteService.getRandomQuote()
         .then(quote => {
             this.currentQuote = quote;
