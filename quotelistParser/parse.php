@@ -22,12 +22,25 @@ foreach ($tops as $i => $top) {
 
     $subs = preg_split('/\n*-{10,}/', $top); // Split Top into the multi and single segment
 
+    // Single-line-quotes
+    $startId = ((7 + $i) * 10 + 1) * 10000 + 1;
+    shell_exec("echo \"$subs[1]\" | awk -v i=$startId -f single.awk >> $out");
+
     // Multi-line-quotes
+    $first = true;
     $startId = (7 + $i) * 100000 + 1;
     $quotes = explode(PHP_EOL.PHP_EOL, $subs[0]);
     foreach($quotes as $k => $quote) {
         if ($k < 1) continue; // Skip headline of Top
-        $output = "id: $startId\n";
+        $output = '';
+
+        if (!$first) {
+            $output .= "---\n";
+        } else {
+            $first = false;
+        }
+
+        $output .= "id: $startId\n";
         $lines = explode(PHP_EOL, $quote); // Split quote into separate lines
 
         foreach($lines as $l => $line) {
@@ -47,12 +60,7 @@ foreach ($tops as $i => $top) {
             }
         }
 
-        $output .= "---\n";
         file_put_contents($out, $output, FILE_APPEND);
         $startId++;
     }
-
-    // Single-line-quotes
-    $startId = ((7 + $i) * 10 + 1) * 10000 + 1;
-    shell_exec("echo \"$subs[1]\" | awk -v i=$startId -f single.awk >> $out");
 }
