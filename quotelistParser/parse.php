@@ -1,28 +1,26 @@
 <?php
 
-const IN = "quotelist";
-const OUT = "out/";
+$in = "quotelist";
+$outDir = "out";
+$out = $outDir."/quotes";
 
 /**
  * Numbering: ttsnnnn
- * tt = capter number ("Top tt"), starting at 10
+ * tt = chapter number ("Top tt"), starting at 10
  * s = singleline-quote (0 = single, 1 = multi)
  * nnnn = unique number within the section, incremential, starting at 0001
  */
 
-$tops = preg_split('/\n*={10,}/', file_get_contents(IN)); // Split file into different Tops
-$file = fopen(OUT."single", "w+") or die("Can't write single-output file!");
+if (!file_exists($outDir)) mkdir($outDir, 0777, true);
+$file = fopen($out, "w+") or die("Can't write output file!\n");
 fclose($file);
-$file = fopen(OUT."multi", "w+") or die("Can't write multi-output file!");
+if (!file_exists($in)) die("Can't read input file!\n");
+$tops = preg_split('/\n*={10,}/', file_get_contents($in)); // Split file into different Tops
+
 foreach ($tops as $i => $top) {
     if ($i < 3) continue; // Skip intro, Top 0 and Top 1
 
     $subs = preg_split('/\n*-{10,}/', $top); // Split Top into the multi and single segment
-
-    // Single-line-quotes
-    $startId = ((7 + $i) * 10 + 1) * 10000 + 1;
-    $out = OUT."single";
-    shell_exec("echo \"$subs[1]\" | awk -v i=$startId -f single.awk >> $out");
 
     // Multi-line-quotes
     $startId = (7 + $i) * 100000 + 1;
@@ -45,8 +43,11 @@ foreach ($tops as $i => $top) {
         }
 
         $output .= "---\n";
-        fwrite($file, $output);
+        file_put_contents($out, $output, FILE_APPEND);
         $startId++;
     }
+
+    // Single-line-quotes
+    $startId = ((7 + $i) * 10 + 1) * 10000 + 1;
+    shell_exec("echo \"$subs[1]\" | awk -v i=$startId -f single.awk >> $out");
 }
-fclose($file);
