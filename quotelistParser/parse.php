@@ -38,7 +38,12 @@ foreach ($tops as $i => $top) {
                 else
                     $output .= "date: $tabs[0]\n\n$tabs[1]\n";
             } else {
-                $output .= "$tabs[0]: $tabs[1]\n";
+                if (count($tabs) === 2)
+                    $output .= "$tabs[0]: $tabs[1]\n";
+                elseif (count($tabs) === 1)
+                    $output .= "$tabs[0]\n";
+                else
+                    echo "Please fix formatting of following quote! \n\"$quote\"\n";
             }
         }
 
