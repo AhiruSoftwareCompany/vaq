@@ -33,10 +33,12 @@ $body = file_get_contents('php://input');
 
 if (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
     putQuote($matches[1], json_decode($body));
+elseif (preg_match("/\/quote\/([a-zA-Z\s]+)/", $url, $matches) && $method === 'GET')
+    getQuote($matches[1]);
 elseif ($url === "/quote" && $method === 'GET')
-    getQuote();
+    getQuote('*');
 else
-    badRequest($method, $url, $body);
+    badRequest();
 
 /**
  * Services
@@ -44,14 +46,17 @@ else
 
 /**
  * GET quote: Gets a random quote from the file.
+ * @param string $origin: The desired origin (category) of the quote
  */
-function getQuote() {
+function getQuote($origin) {
     global $dao;
     global $user;
 
-    $quote = $dao->getRandomQuote($user);
-    if ($quote == null) {
+    $quote = $dao->getRandomQuote($user, $origin);
+    if ($quote === null) {
         http_response_code(404);
+    } elseif ($quote === 400) {
+        badRequest();
     } else {
         echo json_encode($quote);
         http_response_code(200);
@@ -60,16 +65,12 @@ function getQuote() {
 
 /**
  * PUT quote/{id} vote: Refreshes the rating of the given quote.
- * @param $id   int: The id of the quote
- * @param $vote int: The actual vote
+ * @param int $id: The id of the quote
+ * @param int $vote: The actual vote
  */
 function putQuote($id, $vote) {
-    if (!($vote == 1 || $vote == -1) || $id < 0) {
-        global $method;
-        global $url;
-        global $body;
-        badRequest($method, $url, $body);
-    }
+    if (!($vote == 1 || $vote == -1) || $id < 0)
+        badRequest();
 
     global $dao;
     global $user;
@@ -77,10 +78,14 @@ function putQuote($id, $vote) {
     http_response_code($result);
 }
 
-function badRequest($method, $url, $body) {
-    http_response_code(400);
-    if ($GLOBALS["debugToErrorLog"]) {
+function badRequest() {
+    global $method;
+    global $url;
+    global $body;
+
+    if ($GLOBALS["debugToErrorLog"])
         error_log("bad request");
-    }
+
+    http_response_code(400);
     die('Invalid request: ' . $method . ' ' . $url . ' ' . $body);
 }

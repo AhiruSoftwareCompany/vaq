@@ -3,13 +3,15 @@
 class Quote implements JsonSerializable {
     private $id;
     private $date;
+    private $origin;
     private $body;
     private $rating;
     private $vote;
 
-    public function __construct($id = -1, $date = "", $body = "", $rating = 0, $vote = 0) {
+    public function __construct($id, $date, $origin, $body, $rating, $vote) {
         $this->id = $id;
         $this->date = $date;
+        $this->origin = $origin;
         $this->body = $body;
         $this->rating = $rating;
         $this->vote = $vote;
@@ -19,6 +21,7 @@ class Quote implements JsonSerializable {
         return [
             'id' => $this->id,
             'date' => $this->date,
+            'origin' => $this->origin,
             'body' => $this->body,
             'rating' => $this->rating,
             'vote' => $this->vote

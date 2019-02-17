@@ -38,15 +38,21 @@ class DAO {
     /**
      * Gets a random quote from the quotes-file.
      * @param User $user: The querying user
-     * @return Quote|null: A random quote or null if none was found
+     * @param string $origin: The desired origin of the quote
+     * @return Quote|null|int: A random quote or null if none was found
      */
-    public function getRandomQuote(User $user) {
+    public function getRandomQuote(User $user, $origin) {
         $entries = explode("---\n", file_get_contents($this->quotesPath));
         if (strlen(trim($entries[0])) < 5) return null; // If there isn't any quote, return with an error. (count[entries] will always be > 0)
 
-        $index = rand(0, count($entries) - 1); // Get a random index in the range of entries
-        $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separate headers from body
-        $headers = $this->http_parse_headers($data[0]);
+        $timeout = 10000;
+        do { // Kinda dirty solution. May want to work with known indices if performance is too bad.
+            $index = rand(0, count($entries) - 1); // Get a random index in the range of entries
+            $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separate headers from body
+            $headers = $this->http_parse_headers($data[0]);
+            if ($timeout-- <= 0) return 400; // Did not find quotes form that origin
+        } while ($origin != '*' && $origin != $headers["origin"]); // Check if acquired quote has desired origin
+
         $body = substr($data[1], 0, -1); // Remove the last \n from the body
 
         // Get the current rating of the quote
@@ -71,7 +77,7 @@ class DAO {
             }
         }
 
-        $quote = new Quote($headers["id"], $headers["date"], $body, $rating, $vote ? $vote : 0);
+        $quote = new Quote($headers["id"], $headers["date"], $headers["origin"], $body, $rating, $vote ? $vote : 0);
         return $quote;
     }
 
