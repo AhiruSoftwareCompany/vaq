@@ -17,9 +17,15 @@ $file = fopen($out, "w+") or die("Can't write output file!\n");
 fclose($file);
 if (!file_exists($in)) die("Can't read input file!\n");
 $tops = preg_split('/\n*={10,}/', file_get_contents($in)); // Split file into different Tops
+$firstTop = true;
 
 foreach ($tops as $i => $top) {
     if ($i < 3) continue; // Skip intro, Top 0 and Top 1
+
+    if (!$firstTop)
+        file_put_contents($out, "---\n", FILE_APPEND);
+    else
+        $firstTop = false;
 
     $lines = file($originsPath, FILE_IGNORE_NEW_LINES);
     $origin = $lines[$i-3];
@@ -31,18 +37,17 @@ foreach ($tops as $i => $top) {
     shell_exec("echo \"$subs[1]\" | awk -v start=$startId -v origin=\"$origin\" -f single.awk >> $out");
 
     // Multi-line-quotes
-    $first = true;
+    $firstMLQuote = true;
     $startId = (7 + $i) * 100000 + 1;
     $quotes = explode(PHP_EOL.PHP_EOL, $subs[0]);
     foreach($quotes as $k => $quote) {
         if ($k < 1) continue; // Skip headline of Top
         $output = '';
 
-        if (!$first) {
+        if (!$firstMLQuote)
             $output .= "---\n";
-        } else {
-            $first = false;
-        }
+        else
+            $firstMLQuote = false;
 
         $output .= "id: $startId\n";
         $lines = explode(PHP_EOL, $quote); // Split quote into separate lines
