@@ -3,6 +3,7 @@
 $in = "quotelist";
 $outDir = "out";
 $out = $outDir."/quotes";
+$originsPath = "origins";
 
 /**
  * Numbering: ttsnnnn
@@ -20,11 +21,14 @@ $tops = preg_split('/\n*={10,}/', file_get_contents($in)); // Split file into di
 foreach ($tops as $i => $top) {
     if ($i < 3) continue; // Skip intro, Top 0 and Top 1
 
+    $lines = file($originsPath, FILE_IGNORE_NEW_LINES);
+    $origin = $lines[$i-3];
+
     $subs = preg_split('/\n*-{10,}/', $top); // Split Top into the multi and single segment
 
     // Single-line-quotes
     $startId = ((7 + $i) * 10 + 1) * 10000 + 1;
-    shell_exec("echo \"$subs[1]\" | awk -v i=$startId -f single.awk >> $out");
+    shell_exec("echo \"$subs[1]\" | awk -v start=$startId -v origin=\"$origin\" -f single.awk >> $out");
 
     // Multi-line-quotes
     $first = true;
@@ -47,9 +51,9 @@ foreach ($tops as $i => $top) {
             $tabs = preg_split('/\t+/', $line); // Split line in two halfes
             if ($l === 0) {
                 if (count($tabs) === 1) // Check if there is a prelude
-                    $output .= "date: $line\n\n";
+                    $output .= "date: $line\norigin: $origin\n\n";
                 else
-                    $output .= "date: $tabs[0]\n\n$tabs[1]\n";
+                    $output .= "date: $tabs[0]\norigin: $origin\n\n$tabs[1]\n";
             } else {
                 if (count($tabs) === 2)
                     $output .= "$tabs[0]: $tabs[1]\n";
