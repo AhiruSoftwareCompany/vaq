@@ -38,12 +38,19 @@ class DAO {
     /**
      * Gets a random quote from the quotes-file.
      * @param User $user: The querying user
-     * @param string $origin: The desired origin of the quote
+     * @param string $origin: The desired origins of the quote as a string
      * @return Quote|null|int: A random quote or null if none was found
      */
-    public function getRandomQuote(User $user, $origin) {
+    public function getRandomQuote(User $user, $originString) {
         $entries = explode("---\n", file_get_contents($this->quotesPath));
         if (strlen(trim($entries[0])) < 5) return null; // If there isn't any quote, return with an error. (count[entries] will always be > 0)
+
+        if ($originString != '*') {
+            if (!preg_match_all("/\/([\w\s]+)/", $originString, $matches)) return 400;
+            $origins = array();
+            foreach ($matches[1] as $match)
+                array_push($origins, $match);
+        }
 
         $timeout = 10000;
         do { // Kinda dirty solution. May want to work with known indices if performance is too bad.
@@ -51,7 +58,7 @@ class DAO {
             $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separate headers from body
             $headers = $this->http_parse_headers($data[0]);
             if ($timeout-- <= 0) return 400; // Did not find quotes form that origin
-        } while ($origin != '*' && $origin != $headers["origin"]); // Check if acquired quote has desired origin
+        } while ($originString != '*' && !in_array($headers["origin"], $origins)); // Check if acquired quote has desired origin
 
         $body = substr($data[1], 0, -1); // Remove the last \n from the body
 

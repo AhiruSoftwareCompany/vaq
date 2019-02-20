@@ -33,7 +33,7 @@ $body = file_get_contents('php://input');
 
 if (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
     putQuote($matches[1], json_decode($body));
-elseif (preg_match("/\/quote\/([a-zA-Z\s]+)/", $url, $matches) && $method === 'GET')
+elseif (preg_match("/\/quote(\/.+)/", $url, $matches) && $method === 'GET')
     getQuote($matches[1]);
 elseif ($url === "/quote" && $method === 'GET')
     getQuote('*');
@@ -46,13 +46,14 @@ else
 
 /**
  * GET quote: Gets a random quote from the file.
- * @param string $origin: The desired origin (category) of the quote
+ * @param string $originString: The desired origins (categories) of the quote
+ *                              in the form of (the url after '/quote') or ('*')
  */
-function getQuote($origin) {
+function getQuote($originString) {
     global $dao;
     global $user;
 
-    $quote = $dao->getRandomQuote($user, $origin);
+    $quote = $dao->getRandomQuote($user, $originString);
     if ($quote === null) {
         http_response_code(404);
     } elseif ($quote === 400) {
