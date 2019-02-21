@@ -9,13 +9,14 @@ import { Quote } from './Quote';
 })
 export class AppComponent implements OnInit {
     public currentQuote: Quote = null;
-    public origins = [/*redacted*/];
+    public origins: String[];
 
     public constructor(
         private quoteService: QuoteService) {
     }
 
     public ngOnInit(): void {
+        this.getOrigins();
         this.getNewQuote();
     }
 
@@ -32,6 +33,13 @@ export class AppComponent implements OnInit {
         this.quoteService.refreshRating(this.currentQuote)
         .then(diff => {
             this.currentQuote.rating = ratingAN + diff;
+        });
+    }
+
+    public getOrigins(): void {
+        this.quoteService.getOrigins()
+        .then(origins => {
+            this.origins = origins;
         });
     }
 }

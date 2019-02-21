@@ -7,6 +7,7 @@ class DAO {
     private $quotesPath = "data/quotes";
     private $ratingsPath = "data/ratings";
     private $usersPath = "data/users";
+    private $originsPath = "data/origins";
 
     protected static $instance = null;
 
@@ -220,5 +221,15 @@ class DAO {
         $lines[count($lines)] = json_encode($user);
         file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
         return $user;
+    }
+
+    public function getOrigins() {
+        $lines = file($this->originsPath, FILE_IGNORE_NEW_LINES);
+        $origins = array();
+
+        foreach ($lines as $line)
+            array_push($origins, $line);
+
+        return $origins;
     }
 }

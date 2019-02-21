@@ -31,7 +31,9 @@ $url = $_REQUEST['_url'];
 $method = $_SERVER['REQUEST_METHOD'];
 $body = file_get_contents('php://input');
 
-if (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
+if ($url === "/origins" && $method === 'GET')
+    getOrigins();
+elseif (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
     putQuote($matches[1], json_decode($body));
 elseif (preg_match("/\/quote(\/.+)/", $url, $matches) && $method === 'GET')
     getQuote($matches[1]);
@@ -77,6 +79,13 @@ function putQuote($id, $vote) {
     global $user;
     $result = $dao->refreshRating(new Vote(false, $id, $vote), $user);
     http_response_code($result);
+}
+
+function getOrigins() {
+    global $dao;
+    $result = $dao->getOrigins();
+    http_response_code(200);
+    echo json_encode($result);
 }
 
 function badRequest() {

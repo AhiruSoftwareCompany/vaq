@@ -28,6 +28,14 @@ export class QuoteService {
         });
     }
 
+    public getOrigins(): Promise<string[]> {
+        return this.httpClient.get(this.url + "origins")
+        .toPromise()
+        .then((response: string[]) => {
+            return response;
+        });
+    }
+
     private handleError(error: any): Promise<any> {
         return Promise.reject(error.message || error);
     }
