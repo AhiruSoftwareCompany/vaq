@@ -9,6 +9,7 @@ import { Quote } from './Quote';
 })
 export class AppComponent implements OnInit {
     public currentQuote: Quote = null;
+    public origins = [/*redacted*/];
 
     public constructor(
         private quoteService: QuoteService) {

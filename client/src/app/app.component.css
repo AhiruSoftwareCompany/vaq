@@ -1,5 +1,4 @@
 .center {
-    border: 3px solid black;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -10,17 +9,22 @@
     text-align: center;
 }
 
+.border-thick { border: 3px solid black }
+
+.border-thin { border: 2px solid black }
+
 .quote {
-    padding: 30px;
+    padding: 10px;
+    margin: 20px;
     font-size: 1.25em;
 }
 
 pre {
- white-space: pre-wrap;       /* css-3 */
- white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
- white-space: -pre-wrap;      /* Opera 4-6 */
- white-space: -o-pre-wrap;    /* Opera 7 */
- word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
 button {
@@ -28,3 +32,7 @@ button {
     width: 50px;
     font-size: 16px;
 }
+
+.origins-container { display: inline }
+
+.origins-child { display: inline-block }

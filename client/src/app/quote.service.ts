@@ -14,8 +14,7 @@ export class QuoteService {
         return this.httpClient.get(this.url + "quote")
         .toPromise()
         .then((response: Quote) => {
-            const quote: Quote = new Quote(response.id, response.date, response.body, response.rating, response.vote);
-            
+            const quote: Quote = new Quote(response.id, response.date, response.origin, response.body, response.rating, response.vote);
             return quote;
         })
         .catch(this.handleError);
