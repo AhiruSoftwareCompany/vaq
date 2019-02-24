@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { QuoteService } from '../../services/quote.service';
+
+import { DataService } from '../../services/data.service';
 import { Quote } from '../../models/quote';
 
 @Component({
@@ -12,7 +13,7 @@ export class MainComponent implements OnInit {
     public origins: String[];
 
     public constructor(
-        private quoteService: QuoteService) {
+        private dataService: DataService) {
     }
 
     public ngOnInit(): void {
@@ -21,7 +22,7 @@ export class MainComponent implements OnInit {
     }
 
     public getNewQuote(): void {
-        this.quoteService.getRandomQuote()
+        this.dataService.getRandomQuote()
         .then(quote => {
             this.currentQuote = quote;
         });
@@ -30,14 +31,14 @@ export class MainComponent implements OnInit {
     public refreshRating(vote: number): void {
         this.currentQuote.vote = vote;
         let ratingAN = Number(this.currentQuote.rating);
-        this.quoteService.refreshRating(this.currentQuote)
+        this.dataService.refreshRating(this.currentQuote)
         .then(diff => {
             this.currentQuote.rating = ratingAN + diff;
         });
     }
 
     public getOrigins(): void {
-        this.quoteService.getOrigins()
+        this.dataService.getOrigins()
         .then(origins => {
             this.origins = origins;
         });

@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+
 import { Quote } from '../models/quote';
+import { User } from '../models/user';
 
 @Injectable({
     providedIn: 'root'
 })
-export class QuoteService {
+export class DataService {
     private url = "/rest/vaq/";
 
     public constructor(private httpClient: HttpClient) { }
@@ -26,6 +28,11 @@ export class QuoteService {
         .then((response: number) => {
             return response;
         });
+    }
+
+    public login(user: User): Promise<any> {
+        return this.httpClient.post(this.url + "login", user)
+        .toPromise();
     }
 
     public getOrigins(): Promise<string[]> {

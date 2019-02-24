@@ -1,14 +1,14 @@
-<div class="center border-thin">
+<div class="center border-gray">
     <div class="origins-container">
         <span *ngFor="let origin of origins; let i = index">
             <br *ngIf="i%4 == 0">
             <div class="origins-child">
-                <input type="checkbox" name=origin{{i}} value={{origin}}> {{origin}}
+                <input type="checkbox" name=origin{{i}} value={{origin}}> {{ origin }}
             </div>
         </span>
     </div>
 
-    <div class="quote border-thick">
+    <div class="quote border-black">
         <pre *ngIf="currentQuote != null">{{ currentQuote.body }}</pre>
     </div>
 

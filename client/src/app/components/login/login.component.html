@@ -1,3 +1,17 @@
-<p>
-  login works!
-</p>
+<div class="container center border-gray">
+    <form role="form" name="loginForm">
+        <label for="name"> <b> Username </b> </label>
+        <input type="text" placeholder="Enter Username" name="name"
+            [(ngModel)]="name" (keyup)="entering()" required>
+
+        <label for="psw"> <b> Password </b> </label>
+        <input type="password" placeholder="Enter Password" name="psw"
+            [(ngModel)]="pwd" (keyup)="entering()" required>
+
+        <button type="submit" (click)="login()"> Login </button>
+    </form>
+
+    <div class="message">
+        {{ message }}
+    </div>
+</div>
