@@ -7,7 +7,6 @@ class DAO {
     private $quotesPath = "data/quotes";
     private $ratingsPath = "data/ratings";
     private $usersPath = "data/users";
-    private $originsPath = "data/origins";
 
     protected static $instance = null;
 
@@ -39,19 +38,23 @@ class DAO {
     /**
      * Gets a random quote from the quotes-file.
      * @param User $user: The querying user
-     * @param string $origin: The desired origins of the quote as a string
-     * @return Quote|null|int: A random quote or null if none was found
+     * @param string $originString: The desired origins of the quote as a string
+     * @return Quote|int: A random quote or an error code
      */
     public function getRandomQuote(User $user, $originString) {
         $entries = explode("---\n", file_get_contents($this->quotesPath));
-        if (strlen(trim($entries[0])) < 5) return null; // If there isn't any quote, return with an error. (count[entries] will always be > 0)
+        if (strlen(trim($entries[0])) < 5) return 404; // If there isn't any quote, return with an error. (count[entries] will always be > 0)
 
-        if ($originString != '*') {
+        if ($originString == '*') {
+            $origins = $user->getOrigins();
+        } else {
             if (!preg_match_all("/\/([\w\s]+)/", $originString, $matches)) return 400;
             $origins = array();
             foreach ($matches[1] as $match)
-                array_push($origins, $match);
+                if (in_array($match, $user->getOrigins()))
+                    array_push($origins, $match);
         }
+        if (count($origins) === 0) return 400;
 
         $timeout = 10000;
         do { // Kinda dirty solution. May want to work with known indices if performance is too bad.
@@ -104,7 +107,7 @@ class DAO {
         $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $i => $line) {
             $u = new User($line);
-            if ($u->getUID() == $user->getUID()) {
+            if ($user == $u) {
                 $diff = $u->vote($vote);
                 $lines[$i] = json_encode($u);
                 break;
@@ -119,7 +122,7 @@ class DAO {
             $values = explode(' ', $line);
             if ($values[0] === $vote->getId()) {
                 if ($found) { // Check if we already found and changed an entry
-                    $lines[$i] = "-1 " . $line; // Mark line as invalid
+                    $lines[$i] = "-1 $line"; // Mark line as invalid
                 } else {
                     $found = true;
                     $values[1] += $diff;
@@ -138,6 +141,41 @@ class DAO {
     }
 
     /**
+     * Tries to find the given user based on username and password in users-file.
+     * @param User $user
+     * @return User|bool: User if a fitting user was found, false if not
+     */
+    public function getUser($user) {
+        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
+
+        foreach ($lines as $line) {
+            $u = new User($line);
+            if ($user->getName() == $u->getName() && $user->getPwd() == $u->getPwd())
+                return $u;
+        }
+
+        return false;
+    }
+
+    /**
+     * @deprecated May be used for user registration later
+     * Makes sure a specific user is present in the users-file.
+     * @param User $user
+     * @return User
+     */
+    public function putUser(User $user) {
+        if ($this->getUser($user))
+            return $user;
+
+        // User does not exist in file => put it there
+        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
+        $lines[count($lines)] = json_encode($user);
+        file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
+        return $user;
+    }
+
+
+    /**
      * This function also exists in pecl, but isn't a standard php function.
      * @param $headers: HTTP-headers in the form {key]: {value}
      * @return array of {key} => {value} pairs
@@ -150,86 +188,5 @@ class DAO {
             $retVal[$parts[0]] = trim($parts[1]);
         }
         return $retVal;
-    }
-
-    /**
-     * Tries to find user to the given uid in users-file.
-     * @param int $uid
-     * @return User|bool    User if one was found in the file, false else.
-     */
-    public function existsUser($uid) {
-        $user = null;
-        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
-
-        foreach ($lines as $line) {
-            $u = new User($line);
-            if ($u->getUID() == $uid) {
-                $user = $u;
-                break;
-            }
-        }
-
-        return ($user === null)? false : $user;
-    }
-
-    /**
-     * If the server knows a user to the given user, returns it.
-     * Else, or when uid == false, creates new user with unique uid.
-     * @param bool|int $uid
-     * @return User
-     */
-    public function getUser($uid = false) {
-        if ($uid && ($userInFile = $this->existsUser($uid)) !== null)
-            return $userInFile;
-
-        // User does not exist yet => create new one
-        $user = null;
-        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
-        $ids = array();
-
-        foreach ($lines as $line) {
-            $u = new User($line);
-            array_push($ids, $u->getUID());
-        }
-
-        do {
-            try {
-                $uid = random_int(1, PHP_INT_MAX);
-            } catch (Exception $e) {
-                $uid = rand(1, PHP_INT_MAX);
-            }
-        } while (array_search($uid, $ids)); // Make sure the id is not already used
-
-        $user = new User(false, $uid);
-        $lines[count($lines)] = json_encode($user);
-        file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
-
-        return $user;
-    }
-
-    /**
-     * Makes sure a specific user is present in the users-file.
-     * @param User $user
-     * @return User
-     */
-    public function putUser(User $user) {
-        if ($this->existsUser($user->getUID()))
-            return $user;
-
-        // User does not exist in file => put it there
-        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
-        $lines[count($lines)] = json_encode($user);
-        file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
-        return $user;
-    }
-
-    public function getOrigins() {
-        $lines = file($this->originsPath, FILE_IGNORE_NEW_LINES);
-        $origins = array();
-
-        foreach ($lines as $line)
-            array_push($origins, $line);
-
-        return $origins;
     }
 }

@@ -1,14 +1,18 @@
 <?php
 
 class User implements JsonSerializable {
-    private $uid;
+    private $name;
+    private $pwd;
+    private $origins; // array
     private $votes; // array
 
-    public function __construct($json = false, $uid = -1, $votes = null) {
+    public function __construct($json = false, $name = '', $pwd = '', $origins = null, $votes = null) {
         if ($json) {
             $this->set(json_decode($json, true));
         } else {
-            $this->uid = $uid;
+            $this->name = $name;
+            $this->pwd = $pwd;
+            $this->origins = $origins;
             $this->votes = $votes;
         }
     }
@@ -18,7 +22,10 @@ class User implements JsonSerializable {
             if (is_array($value)) {
                 $sub = array();
                 foreach ($value as $sValue) {
-                    array_push($sub, new Vote($json = json_encode($sValue)));
+                    if ($key === "votes")
+                        array_push($sub, new Vote($json = json_encode($sValue)));
+                    else
+                        array_push($sub, $sValue);
                 }
                 $value = $sub;
             }
@@ -26,8 +33,19 @@ class User implements JsonSerializable {
         }
     }
 
-    public function getUID() {
-        return $this->uid;
+    public function getName() {
+        return $this->name;
+    }
+
+    public function getPwd() {
+        return $this->pwd;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getOrigins() {
+        return $this->origins;
     }
 
     /**
@@ -38,7 +56,7 @@ class User implements JsonSerializable {
     }
 
     /**
-     * If the user already voted chances the vote, if not adds it
+     * If the user already voted changes the vote, if not adds it
      * @param Vote $vote : The new Vote
      * @return int: The difference between old and new vote
      */
@@ -66,7 +84,9 @@ class User implements JsonSerializable {
 
     public function jsonSerialize() {
         return [
-            'uid' => $this->getUID(),
+            'name' => $this->getName(),
+            'pwd' => $this->getPwd(),
+            'origins' => $this->getOrigins(),
             'votes' => $this->getVotes()
         ];
     }

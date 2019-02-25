@@ -5,7 +5,7 @@ session_start();
 $debugToErrorLog = true; // set true to write DEBUG-information to the PHP-ErrorLog
 
 function __autoload($class_name) {
-    include $class_name . '.php';
+    include "$class_name.php";
 }
 
 /**
@@ -15,14 +15,25 @@ $dao = DAO::getInstance();
 $dao->touchFiles();
 
 /**
- * Checks if there is already a user is the session.
- * If not, checks if there is a cookie with the uid.
- * If not, creates a new user.
+ * Checks if there is a legit user saved in the session
+ * TODO Don't save the users password in cleartext
  */
-$uid = isset($_COOKIE["uid"]) ? $_COOKIE["uid"] : false;
-$user = isset($_SESSION["user"]) ? $dao->putUser(new User($_SESSION["user"])) : $dao->getUser($uid);
-setcookie("uid", $user->getUID(), 2147483647); // Set / Update the uid in the cookie
-$_SESSION["user"] = json_encode($user); // Set (/ Update) the session-entry
+$user = isset($_SESSION["user"]) ? $dao->getUser(new User($_SESSION["user"])) : null;
+if ($user !== null) updateSession();
+
+/**
+ * Tries to update the session with the current user from file.
+ * @return bool: false if no fitting user was found in file
+ */
+function updateSession() {
+    global $dao, $user;
+    if (($u = $dao->getUser($user)) === false) {
+        $user = null;
+        return false;
+    }
+    $_SESSION["user"] = json_encode($u);
+    return true;
+}
 
 /**
  * Service Dispatcher
@@ -31,8 +42,8 @@ $url = $_REQUEST['_url'];
 $method = $_SERVER['REQUEST_METHOD'];
 $body = file_get_contents('php://input');
 
-if ($url === "/origins" && $method === 'GET')
-    getOrigins();
+if ($url === "/login" && $method === 'POST')
+    login(new User($body));
 elseif (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
     putQuote($matches[1], json_decode($body));
 elseif (preg_match("/\/quote(\/.+)/", $url, $matches) && $method === 'GET')
@@ -52,8 +63,7 @@ else
  *                              in the form of (the url after '/quote') or ('*')
  */
 function getQuote($originString) {
-    global $dao;
-    global $user;
+    global $dao, $user;
 
     $quote = $dao->getRandomQuote($user, $originString);
     if ($quote === null) {
@@ -75,23 +85,30 @@ function putQuote($id, $vote) {
     if (!($vote == 1 || $vote == -1) || $id < 0)
         badRequest();
 
-    global $dao;
-    global $user;
+    global $dao, $user;
     $result = $dao->refreshRating(new Vote(false, $id, $vote), $user);
+    updateSession();
     http_response_code($result);
 }
 
-function getOrigins() {
-    global $dao;
-    $result = $dao->getOrigins();
-    http_response_code(200);
-    echo json_encode($result);
+/**
+ * Tries to log the client in.
+ * Echoes the user if successful.
+ * @param $receivedUser: The user as received from the client, trying to log in
+ */
+function login($receivedUser) {
+    global $user;
+    $user = $receivedUser;
+    if (updateSession()) {
+        echo json_encode($user);
+        http_response_code(200);
+    } else {
+        http_response_code(403);
+    }
 }
 
 function badRequest() {
-    global $method;
-    global $url;
-    global $body;
+    global $method, $url, $body;
 
     if ($GLOBALS["debugToErrorLog"])
         error_log("bad request");
