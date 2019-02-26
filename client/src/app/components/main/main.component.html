@@ -1,9 +1,9 @@
 <div class="center border-gray">
     <div class="origins-container">
-        <span *ngFor="let origin of origins; let i = index">
+        <span *ngFor="let origin of legalOrigins; let i = index">
             <br *ngIf="i%4 == 0">
             <div class="origins-child">
-                <input type="checkbox" name=origin{{i}} value={{origin}}> {{ origin }}
+                <input type="checkbox" name=origin{{i}} value={{origin}} class="origin"> {{ origin }}
             </div>
         </span>
     </div>

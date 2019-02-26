@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { DataService } from '../../services/data.service';
 import { ContextService } from '../../services/context.service';
@@ -11,20 +12,33 @@ import { Quote } from '../../models/quote';
 })
 export class MainComponent implements OnInit {
     public currentQuote: Quote = null;
-    public origins: String[];
+    public legalOrigins: String[];
 
     public constructor(
         private dataService: DataService,
-        private context: ContextService) {
+        private context: ContextService,
+        private router: Router) {
     }
 
     public ngOnInit(): void {
-        this.getNewQuote();
-        this.origins = this.context.getUser().origins;
+        if (this.context.getUser() === null) {
+            this.router.navigate(['/login']);
+        } else {
+            this.legalOrigins = this.context.getUser().origins;
+            this.getNewQuote();
+        }
     }
 
     public getNewQuote(): void {
-        this.dataService.getRandomQuote()
+        let selectedOrigins = [];
+        let originInputs = document.getElementsByClassName("origin");
+        [].forEach.call(originInputs, function(input) {
+            if (input.checked)
+                selectedOrigins.push(input.value);
+        })
+        console.log(selectedOrigins);
+
+        this.dataService.getRandomQuote(selectedOrigins)
         .then(quote => {
             this.currentQuote = quote;
         });

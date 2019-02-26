@@ -12,8 +12,12 @@ export class DataService {
 
     public constructor(private httpClient: HttpClient) { }
 
-    public getRandomQuote(): Promise<Quote> {
-        return this.httpClient.get(this.url + "quote")
+    public getRandomQuote(origins: string[]): Promise<Quote> {
+        let url = this.url + "quote";
+        origins.forEach(function(origin) {
+            url += "/" + origin;
+        })
+        return this.httpClient.get(url)
         .toPromise()
         .then((response: Quote) => {
             const quote: Quote = new Quote(response.id, response.date, response.origin, response.body, response.rating, response.vote);
