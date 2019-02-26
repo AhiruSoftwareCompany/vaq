@@ -62,7 +62,7 @@ class DAO {
             $data = preg_split("#\n\s*\n#Uis", $entries[$index]); // Separate headers from body
             $headers = $this->http_parse_headers($data[0]);
             if ($timeout-- <= 0) return 400; // Did not find quotes form that origin
-        } while ($originString != '*' && !in_array($headers["origin"], $origins)); // Check if acquired quote has desired origin
+        } while (!in_array($headers["origin"], $origins)); // Check if acquired quote has desired origin
 
         $body = substr($data[1], 0, -1); // Remove the last \n from the body
 

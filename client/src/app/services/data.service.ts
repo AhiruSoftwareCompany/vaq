@@ -30,17 +30,14 @@ export class DataService {
         });
     }
 
-    public login(user: User): Promise<any> {
+    public login(user: User): Promise<User> {
         return this.httpClient.post(this.url + "login", user)
-        .toPromise();
-    }
-
-    public getOrigins(): Promise<string[]> {
-        return this.httpClient.get(this.url + "origins")
         .toPromise()
-        .then((response: string[]) => {
-            return response;
-        });
+        .then((response: User) => {
+            const user: User = new User(response.name, response.pwd, response.origins);
+            return user;
+        })
+        .catch(this.handleError);
     }
 
     private handleError(error: any): Promise<any> {

@@ -2,11 +2,11 @@
     <form role="form" name="loginForm">
         <label for="name"> <b> Username </b> </label>
         <input type="text" placeholder="Enter Username" name="name"
-            [(ngModel)]="name" (keyup)="entering()" required>
+            [(ngModel)]="name" (keyup)="entering($event)" required>
 
         <label for="psw"> <b> Password </b> </label>
         <input type="password" placeholder="Enter Password" name="psw"
-            [(ngModel)]="pwd" (keyup)="entering()" required>
+            [(ngModel)]="pwd" (keyup)="entering($event)" required>
 
         <button type="submit" (click)="login()"> Login </button>
     </form>

@@ -31,6 +31,7 @@ function updateSession() {
         $user = null;
         return false;
     }
+    $user = $u;
     $_SESSION["user"] = json_encode($u);
     return true;
 }
@@ -44,6 +45,8 @@ $body = file_get_contents('php://input');
 
 if ($url === "/login" && $method === 'POST')
     login(new User($body));
+elseif ($url === "/user" && $method === 'GET')
+    createUser();
 elseif (preg_match("/\/quote\/(\d+)/", $url, $matches) && $method === 'PUT')
     putQuote($matches[1], json_decode($body));
 elseif (preg_match("/\/quote(\/.+)/", $url, $matches) && $method === 'GET')
@@ -105,6 +108,15 @@ function login($receivedUser) {
     } else {
         http_response_code(403);
     }
+}
+
+function createUser() {
+    global $dao;
+    $u = new User(false, "admin", "admin", ["TUM","Beccis Grundschule","THI"]);
+    var_dump($u);
+    $dao->putUser($u);
+    echo "\nJSON: ".json_encode($u);
+
 }
 
 function badRequest() {

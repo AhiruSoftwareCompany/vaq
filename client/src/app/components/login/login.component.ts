@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 
 import { DataService } from '../../services/data.service';
 import { User } from '../../models/user';
+import { ContextService } from '../../services/context.service';
 
 @Component({
     selector: 'app-login',
@@ -16,7 +17,8 @@ export class LoginComponent implements OnInit {
 
     constructor(
         private router: Router,
-        private dataService: DataService) {
+        private dataService: DataService,
+        private context: ContextService) {
     }
 
     ngOnInit() { }
@@ -24,7 +26,7 @@ export class LoginComponent implements OnInit {
     public login(): void {
         this.dataService.login(new User(this.name, this.pwd))
         .then(result => {
-            // TODO save user in context
+            this.context.setUser(result);
             this.router.navigate(['/main']);
         })
         .catch(result => {
@@ -32,7 +34,8 @@ export class LoginComponent implements OnInit {
         });
     }
 
-    public entering(): void {
-        this.message = ''; // Clear error message
+    public entering(event): void {
+        if (event.key !== "Enter")
+            this.message = ''; // Clear error message
     }
 }
