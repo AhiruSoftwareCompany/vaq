@@ -1,4 +1,5 @@
 <?php
+require_once(dirname(__FILE__)."/Vote.php");
 
 class User implements JsonSerializable {
     private $name;

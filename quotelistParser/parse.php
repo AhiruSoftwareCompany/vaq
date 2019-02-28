@@ -1,5 +1,6 @@
+#!/usr/bin/php
 <?php
-
+chdir(dirname(__FILE__));
 $in = "quotelist";
 $outDir = "out";
 $out = $outDir."/quotes";
