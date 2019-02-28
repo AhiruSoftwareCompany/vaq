@@ -158,24 +158,6 @@ class DAO {
     }
 
     /**
-     * @deprecated May be used for user registration later
-     * Makes sure a specific user is present in the users-file.
-     * @param User $user
-     * @return User
-     */
-    public function putUser(User $user) {
-        if ($this->getUser($user))
-            return $user;
-
-        // User does not exist in file => put it there
-        $lines = file($this->usersPath, FILE_IGNORE_NEW_LINES);
-        $lines[count($lines)] = json_encode($user);
-        file_put_contents($this->usersPath, implode(PHP_EOL, $lines));
-        return $user;
-    }
-
-
-    /**
      * This function also exists in pecl, but isn't a standard php function.
      * @param $headers: HTTP-headers in the form {key]: {value}
      * @return array of {key} => {value} pairs
