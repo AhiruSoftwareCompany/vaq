@@ -4,5 +4,5 @@ BEGIN {
 }
 $0 != "" {
     print "id: " start "\ndate: " $2 "\norigin: " origin "\n\n" $1 ": " $3 "\n---"
-    i++
+    start++
 }
