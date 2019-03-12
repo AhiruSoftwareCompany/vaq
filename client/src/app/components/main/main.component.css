@@ -16,6 +16,7 @@ button {
     margin: 5px;
     width: 50px;
     font-size: 16px;
+    box-sizing: content-box;
 }
 
 .origins-container { display: inline }
