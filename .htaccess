@@ -1,0 +1,4 @@
+# #try-catch
+ErrorDocument 403 /client/index.html
+ErrorDocument 404 /client/index.html
+ErrorDocument 500 /client/index.html 

@@ -21,7 +21,14 @@ export class LoginComponent implements OnInit {
         private context: ContextService) {
     }
 
-    ngOnInit() { }
+    ngOnInit() {
+        this.dataService.login()
+        .then(result => {
+            this.message = "FOO";
+            this.context.setUser(result);
+            this.router.navigate(['/main']);
+        });
+    }
 
     public login(): void {
         this.dataService.login(new User(this.name, this.pwd))

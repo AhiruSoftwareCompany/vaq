@@ -34,7 +34,7 @@ export class DataService {
         });
     }
 
-    public login(user: User): Promise<User> {
+    public login(user?: User): Promise<User> {
         return this.httpClient.post(this.url + "login", user)
         .toPromise()
         .then((response: User) => {

@@ -99,6 +99,14 @@ function putQuote($id, $vote) {
  */
 function login($receivedUser) {
     global $user;
+
+    $ru = json_decode($receivedUser);
+    if ($ru->name == '' && $user !== null) {
+        echo json_encode($user);
+        http_response_code(200);
+        return;
+    }
+
     $user = $receivedUser;
     if (updateSession()) {
         echo json_encode($user);
