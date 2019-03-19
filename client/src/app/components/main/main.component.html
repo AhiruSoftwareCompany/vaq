@@ -21,4 +21,8 @@
     <div>
         <p> Current rating: <span *ngIf="currentQuote != null"> {{ currentQuote.rating }} </span> </p>
     </div>
+
+    <hr>
+
+    <button (click)="logout()"> Logout </button>
 </div>

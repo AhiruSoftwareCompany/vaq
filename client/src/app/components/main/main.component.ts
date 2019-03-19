@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { CookieService } from 'ngx-cookie-service';
 
 import { DataService } from '../../services/data.service';
 import { ContextService } from '../../services/context.service';
@@ -17,7 +18,8 @@ export class MainComponent implements OnInit {
     public constructor(
         private dataService: DataService,
         private context: ContextService,
-        private router: Router) {
+        private router: Router,
+        private cookie: CookieService) {
     }
 
     public ngOnInit(): void {
@@ -51,5 +53,10 @@ export class MainComponent implements OnInit {
         .then(diff => {
             this.currentQuote.rating = ratingAN + diff;
         });
+    }
+
+    public logout(): void {
+        this.cookie.delete('PHPSESSID');
+        this.router.navigate(['/login']);
     }
 }
