@@ -12,7 +12,11 @@ function __autoload($class_name) {
  * Initiates the DAO
  */
 $dao = DAO::getInstance();
-$dao->touchFiles();
+$error = $dao->touchFiles();
+if ($error) {
+    http_response_code(500);
+    die("Server error: ".$error);
+}
 
 /**
  * Checks if there is a legit user saved in the session

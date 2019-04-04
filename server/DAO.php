@@ -24,15 +24,18 @@ class DAO {
     /**
      * Checks if the quotes-file exists.
      * Tries to create the auto-generated files if they do not already exist.
+     * @return string|bool: An errormessage if needed or false if everything is okay.
      */
     public function touchFiles() {
-        if (!file_exists($this->quotesPath)) die("Quotes-file does not exist");
+        // TODO Check if /data/ exists, if not mkdir / error
+        if (!file_exists($this->quotesPath)) return "Quotes-file does not exist!";
 
-        $fr = fopen($this->ratingsPath, 'a+') or die("Can't create ratings-file");
+        if (!($fr = fopen($this->ratingsPath, 'a+'))) return "Can't create ratings-file!";
         fclose($fr);
 
-        $fu = fopen($this->usersPath, 'a+') or die("Can't create users-file");
+        if (!($fu = fopen($this->usersPath, 'a+'))) return "Can't create users-file!";
         fclose($fu);
+        return false;
     }
 
     /**
