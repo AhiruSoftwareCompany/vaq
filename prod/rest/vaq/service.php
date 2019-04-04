@@ -12,7 +12,11 @@ function __autoload($class_name) {
  * Initiates the DAO
  */
 $dao = DAO::getInstance();
-$dao->touchFiles();
+$error = $dao->touchFiles();
+if ($error) {
+    http_response_code(500);
+    die("Server error: ".$error);
+}
 
 /**
  * Checks if there is a legit user saved in the session
@@ -101,7 +105,7 @@ function login($receivedUser) {
     global $user;
 
     $ru = json_decode($receivedUser);
-    if ($ru->name == '' && $user !== null) {
+    if ($ru->name == '' && $user !== null && $user->getName() != '') {
         echo json_encode($user);
         http_response_code(200);
         return;

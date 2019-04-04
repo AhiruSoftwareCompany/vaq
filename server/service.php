@@ -105,7 +105,7 @@ function login($receivedUser) {
     global $user;
 
     $ru = json_decode($receivedUser);
-    if ($ru->name == '' && $user !== null) {
+    if ($ru->name == '' && $user !== null && $user->getName() != '') {
         echo json_encode($user);
         http_response_code(200);
         return;
